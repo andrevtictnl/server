@@ -132,6 +132,11 @@ void Input::reset()
         FF(av_dict_set(&options, "rw_timeout", "60000000", 0)); // 60 second IO timeout
     }
 
+    
+
+    // fix for https://github.com/CasparCG/server/issues/1128  To solve segmentation fault under high load on Ubuntu 18.04
+    std::lock_guard<std::mutex> format_lock(ic_mutex_);
+
     AVFormatContext* ic = nullptr;
     FF(avformat_open_input(&ic, filename_.c_str(), input_format, &options));
     ic_ = std::shared_ptr<AVFormatContext>(ic, [](AVFormatContext* ctx) { avformat_close_input(&ctx); });
